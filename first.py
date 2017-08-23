@@ -123,7 +123,7 @@ def parsedata(data):
 	csv1.append([id,level]) #Записываем в первый параметр для последующего сохранения
 	for obj in oldroot.iter('object'):
 		csv2.append([id, obj.get('name')]) #записываем во второй параметр
-	
+
 
 """
 Основной алгоритм второй части задачи
@@ -143,6 +143,7 @@ def main():
 	createData() # первая часть
 	input('Press any key for second step..')
 	analyseData() # вторая часть
+	print('All done')
 	return 0
 
 
