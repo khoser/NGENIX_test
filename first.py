@@ -11,6 +11,7 @@ try:
 except ImportError:
 	import xml.etree.ElementTree as etree
 from multiprocessing.pool import ThreadPool as Pool
+#from multiprocessing import Pool
 
 
 SAVE_DIRECTORY = 'data'
@@ -149,6 +150,8 @@ def analyseData():
 	for root, dirs, files in os.walk(SAVE_DIRECTORY): # Список всех файлов и папок в директории
 		data = (file for file in files)
 		p.map(readzip, data) #запуск в несколько потоков
+	p.close()
+	p.join()
 	scsv() # сохранение
 
 
