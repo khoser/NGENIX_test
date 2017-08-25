@@ -10,13 +10,18 @@ try:
 	import xml.etree.cElementTree as etree
 except ImportError:
 	import xml.etree.ElementTree as etree
+from multiprocessing.pool import ThreadPool as Pool
 
 
-rand = RR().random #для короткого вызова случайного числа
+SAVE_DIRECTORY = 'data'
+NUM_ARC = 50
+NUM_XML = 100
 
 csv1=[] #данные для сохранения csv файлов
 csv2=[]
-	
+
+rand = RR().random #для короткого вызова случайного числа
+
 
 """
 Функция формирует уникальное "случайное" строковое значение
@@ -73,16 +78,16 @@ def fsave(name, data):
 """
 def createData():
 	try:
-		os.makedirs('data') #Создаем и переходим в новую папку. Папка на момент запуска программы должна отсутствовать.
+		os.makedirs(SAVE_DIRECTORY) #Создаем и переходим в новую папку. Папка на момент запуска программы должна отсутствовать.
 	except OSError:
 		pass
-	os.chdir('data')
-	for i in range(50):
+	os.chdir(SAVE_DIRECTORY)
+	for i in range(NUM_ARC):
 		numer = str(i)
 		os.makedirs(numer) #Создаем временную папку
 		z = zipfile.ZipFile(numer + '.zip', 'w')        # Создание очередного архива из 50
 		os.chdir(numer)
-		for f in range(100):
+		for f in range(NUM_XML):
 			fsave(str(f), newXML())
 			z.write(os.path.join('',str(f)+'.xml'))         # Создание очередного файла xml и запись его в архив
 		z.close()
@@ -126,16 +131,24 @@ def parsedata(data):
 
 
 """
+Чтение архива
+"""
+def readzip(file):
+	z = zipfile.ZipFile(os.path.join(SAVE_DIRECTORY,file), 'r') #Открываем архив на чтение
+	for xml in z.namelist():
+		data = z.read(xml) # чтение данных конкретного файла архива
+		parsedata(data) # парсинг
+
+
+"""
 Основной алгоритм второй части задачи
 """
 def analyseData():
 	#os.chdir('data')
-	for root, dirs, files in os.walk('data'): # Список всех файлов и папок в директории data
-		for file in files:
-			z = zipfile.ZipFile(os.path.join(root,file), 'r') #Открываем архив на чтение
-			for xml in z.namelist():
-				data = z.read(xml) # чтение данных конкретного файла архива
-				parsedata(data) # парсинг
+	p=Pool()
+	for root, dirs, files in os.walk(SAVE_DIRECTORY): # Список всех файлов и папок в директории
+		data = (file for file in files)
+		p.map(readzip, data) #запуск в несколько потоков
 	scsv() # сохранение
 
 
